@@ -42,9 +42,10 @@ class Connection(object):
 
 
 class GmailProxy(object):
-    def __init__(self, SECRET_KEY=None, EMAIL_APPENGINE_PROXY_URL=None):
+    def __init__(self, SECRET_KEY=None, EMAIL_APPENGINE_PROXY_URL=None, fail_silently=False):
         self.signer = Signer(SECRET_KEY)
         self.connection = Connection(EMAIL_APPENGINE_PROXY_URL)
+        self.fail_silently = fail_silently
 
     def send_mail(self, msg):
         values = {'msg':msg.as_string(),
@@ -52,7 +53,7 @@ class GmailProxy(object):
         data = urllib.urlencode([(k, v.encode('utf-8')) for k, v in values.items()])
         r, c = self.connection.make_request(data)
 
-        if r.status != 204:
+        if r.status != 204 and not self.fail_silently:
             raise MessageSendingFailure(c)
 
 
