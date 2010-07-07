@@ -65,11 +65,11 @@ def send_message(msg):
         # because GAE doesn't give us enough control there.
         for part in msg.walk():
             if part.get_content_type() == 'text/plain' and not body:
-                body = part.get_payload()
+                body = part.get_payload(decode=True)
             elif part.get_content_type() == 'text/html' and not html:
-                html = part.get_payload()
+                html = part.get_payload(decode=True)
             elif not part.get_content_type().startswith('multipart'):
-                attachments.append((get_filename(part), part.get_payload()))
+                attachments.append((get_filename(part), part.get_payload(decode=True)))
         if not body:
             raise BadMessageError("No message body specified")
         message.body = body
