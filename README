@@ -1,0 +1,4 @@
+* This is a limited RFC2822-over-HTTP proxy for running in Google App Engine.
+
+Emails sent as RFC-2822 documents (with an accompanying signature) are decoded & sent onwards using GAE's mail-sending capabilities.
+
