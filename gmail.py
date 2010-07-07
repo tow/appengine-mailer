@@ -8,43 +8,52 @@ class MessageSendingFailure(Exception):
 
 
 class Signer(object):
-    def __init__(self):
-        try:
-            self.SECRET_KEY = os.environ['GMAIL_SECRET_KEY']
-        except KeyError:
+    def __init__(self, SECRET_KEY=None):
+        if not SECRET_KEY:
             try:
-                self.SECRET_KEY = open('/etc/envdir/GMAIL_SECRET_KEY').readline().rstrip()
-            except OSError:
-                raise EnvironmentError("GMAIL_SECRET_KEY is not set.")
+               SECRET_KEY = os.environ['GMAIL_SECRET_KEY']
+            except KeyError:
+                try:
+                    SECRET_KEY = open('/etc/envdir/GMAIL_SECRET_KEY').readline().rstrip()
+                except OSError:
+                    raise EnvironmentError("GMAIL_SECRET_KEY is not set.")
+        self.SECRET_KEY = SECRET_KEY
 
     def generate_signature(self, msg):
         return base64.encodestring(hmac.new(self.SECRET_KEY, msg, hashlib.sha1).digest()).strip()
 
 
 class Connection(object):
-    def __init__(self):
+    def __init__(self, EMAIL_APPENGINE_PROXY_URL=None):
         import httplib2
         self.h = httplib2.Http()
-        try:
-            self.EMAIL_APPENGINE_PROXY_URL = os.environ['GMAIL_PROXY_URL']
-        except KeyError:
-            try: 
-                self.EMAIL_APPENGINE_PROXY_URL = open('/etc/envdir/GMAIL_PROXY_URL').readline().rstrip()
-            except OSError:
-                raise EnvironmentError("GMAIL_PROXY_URL is not set.")
+        if not EMAIL_APPENGINE_PROXY_URL:
+            try:
+                EMAIL_APPENGINE_PROXY_URL = os.environ['GMAIL_PROXY_URL']
+            except KeyError:
+                try:
+                    EMAIL_APPENGINE_PROXY_URL = open('/etc/envdir/GMAIL_PROXY_URL').readline().rstrip()
+                except OSError:
+                    raise EnvironmentError("GMAIL_PROXY_URL is not set.")
+        self.EMAIL_APPENGINE_PROXY_URL = EMAIL_APPENGINE_PROXY_URL
 
     def make_request(self, data):
         return self.h.request(self.EMAIL_APPENGINE_PROXY_URL, "POST", body=data)
 
 
-def send_mail(msg):
-    values = {'msg':msg.as_string(),
-              'signature':Signer().generate_signature(msg.as_string())}
-    data = urllib.urlencode([(k, v.encode('utf-8')) for k, v in values.items()])
-    r, c = Connection().make_request(data)
+class GmailProxy(object):
+    def __init__(self, SECRET_KEY=None, EMAIL_APPENGINE_PROXY_URL=None):
+        self.signer = Signer(SECRET_KEY)
+        self.connection = Connection(EMAIL_APPENGINE_PROXY_URL)
 
-    if r.status != 204:
-        raise MessageSendingFailure(c)
+    def send_mail(self, msg):
+        values = {'msg':msg.as_string(),
+                  'signature':self.signer.generate_signature(msg.as_string())}
+        data = urllib.urlencode([(k, v.encode('utf-8')) for k, v in values.items()])
+        r, c = self.connection.make_request(data)
+
+        if r.status != 204:
+            raise MessageSendingFailure(c)
 
 
 if __name__ == '__main__':
@@ -65,4 +74,4 @@ if __name__ == '__main__':
         recipient = os.environ.get('RECIPIENT')
         if recipient:
             msg['To'] = recipient
-    send_mail(msg)
+    GmailProxy().send_mail(msg)

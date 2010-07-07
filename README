@@ -2,3 +2,6 @@
 
 Emails sent as RFC-2822 documents (with an accompanying signature) are decoded & sent onwards using GAE's mail-sending capabilities.
 
+The From address needs to be authorized
+
+Reply-To won't work for people reading the email in gmail: See  http://www.google.com/support/forum/p/gmail/thread?tid=74d00d5e2605242d&hl=en

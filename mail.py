@@ -76,8 +76,8 @@ def send_message(msg):
         raise BadMessageError("Unauthorized message sender '%s'" % sender)
 
 def check_signature(msg, signature):
-    os.environ['GMAIL_SECRET_KEY'] = open('GMAIL_SECRET_KEY').read().strip()
-    return Signer().generate_signature(msg) == signature
+    GMAIL_SECRET_KEY = open('GMAIL_SECRET_KEY').read().strip()
+    return Signer(GMAIL_SECRET_KEY).generate_signature(msg) == signature
 
 def parse_args(request):
     msg = request.get('msg')
