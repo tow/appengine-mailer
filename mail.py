@@ -56,20 +56,27 @@ def send_message(msg):
     if isinstance(payload, basestring):
         message.body = payload
     else:
-        # GAW demands we specify the body explicitly - we use the first textual attachment.
-        payload = msg.walk()
-        while True:
-            try:
-                firstpart = payload.next()
-            except StopIteration:
-                raise BadMessageError("Message consists only of multipart attachments")
-            if not firstpart.get_content_type().startswith('multipart'):
-                break
-        if not firstpart.get_content_type() == 'text/plain':
-            raise BadMessageError("No text body found for message")
-        message.body = firstpart.get_payload()
-        message.attachments = [(get_filename(part), part.as_string()) for part in payload
-                               if not part.get_content_type().startswith('multipart')]
+        body = ''
+        html = ''
+        attachments = []
+        # GAE demands we specify the body explicitly - we use the first text/plain attachment we find.
+        # Similarly, we pull in the first html we find and use that for message.html
+        # We pull in any other attachments we find; but we ignore the multipart structure,
+        # because GAE doesn't give us enough control there.
+        for part in msg.walk():
+            if part.get_content_type() == 'text/plain' and not body:
+                body = part.get_payload()
+            elif part.get_content_type() == 'text/html' and not html:
+                html = part.get_payload()
+            elif not part.get_content_type().startswith('multipart'):
+                attachments.append((get_filename(part), part.get_payload()))
+        if not body:
+            raise BadMessageError("No message body specified")
+        message.body = body
+        if html:
+            message.html = html
+        if attachments:
+            message.attachments = attachments
     try:
         message.send()
     except InvalidSenderError:
