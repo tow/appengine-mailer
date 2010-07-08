@@ -99,6 +99,10 @@ def parse_args(request):
 
 
 class SendMail(RequestHandler):
+    def get(self):
+        # Just so that we can pingdom it to see if it's up.
+        return
+
     def post(self):
         try:
             msg = parse_args(self.request)
