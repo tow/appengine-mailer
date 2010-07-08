@@ -6,7 +6,7 @@ from google.appengine.ext.webapp import RequestHandler
 from gmail import Signer
 
 
-suffixes = dict(line.strip().split()[:2] for line in open('google.mime.types'))
+suffixes = dict(line.strip().split()[:2] for line in open('google.mime.types') if not line.startswith('#'))
 
 
 class BadRequestError(ValueError):

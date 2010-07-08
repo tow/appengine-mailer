@@ -1,3 +1,4 @@
+# This list is taken from http://code.google.com/appengine/docs/python/mail/overview.html
 application/msword	doc
 application/pdf	pdf
 application/rss+xml	rss
