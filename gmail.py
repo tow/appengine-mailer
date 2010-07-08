@@ -35,8 +35,6 @@ class Signer(object):
 
 class Connection(object):
     def __init__(self, EMAIL_APPENGINE_PROXY_URL=None):
-        import httplib2
-        self.h = httplib2.Http()
         if not EMAIL_APPENGINE_PROXY_URL:
             try:
                 EMAIL_APPENGINE_PROXY_URL = os.environ['GMAIL_PROXY_URL']
@@ -48,7 +46,8 @@ class Connection(object):
         self.EMAIL_APPENGINE_PROXY_URL = EMAIL_APPENGINE_PROXY_URL
 
     def make_request(self, data):
-        return self.h.request(self.EMAIL_APPENGINE_PROXY_URL, "POST", body=data)
+        response = urllib.urlopen(self.EMAIL_APPENGINE_PROXY_URL, data=data)
+        return response.getcode(), response.read()
 
 
 class GmailProxy(object):
@@ -61,10 +60,10 @@ class GmailProxy(object):
         values = {'msg':msg.as_string(),
                   'signature':self.signer.generate_signature(msg.as_string())}
         data = urllib.urlencode([(k, v.encode('utf-8')) for k, v in values.items()])
-        r, c = self.connection.make_request(data)
+        status, errmsg = self.connection.make_request(data)
 
-        if r.status != 204 and not self.fail_silently:
-            raise MessageSendingFailure(c)
+        if status != 204 and not self.fail_silently:
+            raise MessageSendingFailure(errmsg)
 
 
 if __name__ == '__main__':
