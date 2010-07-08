@@ -8,19 +8,29 @@ class MessageSendingFailure(Exception):
 
 
 class Signer(object):
-    def __init__(self, SECRET_KEY=None):
-        if not SECRET_KEY:
+    def __init__(self, SECRET_KEYS=None):
+        if not SECRET_KEYS:
             try:
-               SECRET_KEY = os.environ['GMAIL_SECRET_KEY']
+               SECRET_KEYS = [os.environ['GMAIL_SECRET_KEY']]
             except KeyError:
                 try:
-                    SECRET_KEY = open('/etc/envdir/GMAIL_SECRET_KEY').readline().rstrip()
+                    SECRET_KEYS = [open('/etc/envdir/GMAIL_SECRET_KEY').readline().rstrip()]
                 except OSError:
                     raise EnvironmentError("GMAIL_SECRET_KEY is not set.")
-        self.SECRET_KEY = SECRET_KEY
+        self.SECRET_KEYS = SECRET_KEYS
+
+    @staticmethod
+    def sign(msg, key):
+        return base64.encodestring(hmac.new(key, msg, hashlib.sha1).digest()).strip()
 
     def generate_signature(self, msg):
-        return base64.encodestring(hmac.new(self.SECRET_KEY, msg, hashlib.sha1).digest()).strip()
+        return self.sign(msg, self.SECRET_KEYS[0])
+
+    def verify_signature(self, msg, signature):
+        for key in self.SECRET_KEYS:
+            if self.sign(msg, key) == signature:
+                return True
+        return False
 
 
 class Connection(object):
