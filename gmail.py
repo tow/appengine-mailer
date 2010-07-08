@@ -51,14 +51,17 @@ class Connection(object):
 
 
 class GmailProxy(object):
-    def __init__(self, SECRET_KEY=None, EMAIL_APPENGINE_PROXY_URL=None, fail_silently=False):
+    def __init__(self, SECRET_KEY=None, EMAIL_APPENGINE_PROXY_URL=None, fix_sender=False, fail_silently=False):
         self.signer = Signer(SECRET_KEY)
         self.connection = Connection(EMAIL_APPENGINE_PROXY_URL)
+        self.fix_sender = fix_sender
         self.fail_silently = fail_silently
 
     def send_mail(self, msg):
         values = {'msg':msg.as_string(),
                   'signature':self.signer.generate_signature(msg.as_string())}
+        if self.fix_sender:
+            values['fix_sender'] = 'true'
         data = urllib.urlencode([(k, v.encode('utf-8')) for k, v in values.items()])
         status, errmsg = self.connection.make_request(data)
 
@@ -71,6 +74,8 @@ if __name__ == '__main__':
        and the message on stdin"""
     parser = optparse.OptionParser()
     parser.add_option("-s", dest="subject", help="subject of message")
+    parser.add_option("--fix-sender", action="store_true", dest="fix_sender",
+                      help="If sender is not authorized, replace From with an authorized sender")
     options, to_addresses = parser.parse_args()
     if to_addresses:
         msg = email.message.Message()
@@ -84,4 +89,4 @@ if __name__ == '__main__':
         recipient = os.environ.get('RECIPIENT')
         if recipient:
             msg['To'] = recipient
-    GmailProxy().send_mail(msg)
+    GmailProxy(fix_sender=options.fix_sender).send_mail(msg)
