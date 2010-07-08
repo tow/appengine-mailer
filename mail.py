@@ -106,13 +106,13 @@ class SendMail(RequestHandler):
             logging.info("Sent message ok\n%s" % msg)
             self.error(204)
         except BadRequestError, e:
-            logging.error("Malformed request")
+            logging.error("Malformed request: %s" % e.args[0])
             self.error(400)
             self.response.out.write(e.args[0])
         except BadMessageError, e:
-            logging.error("Failed to send message\n%s" % msg)
+            logging.error("Failed to send message: %s" % e.args[0])
             self.error(400)
             self.response.out.write(e.args[0])
         except Exception, e:
-            logging.exception("Failed to process request\n%s" % self.request)
+            logging.exception("Failed to process request")
             self.error(500)
