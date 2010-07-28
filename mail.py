@@ -74,7 +74,7 @@ class Mailer(object):
 
         # If there's just a plain text body, use that, otherwise
         # iterate over all the attachments
-        payload = msg.get_payload()
+        payload = msg.get_payload(decode=True)
         if isinstance(payload, basestring):
             message.body = payload
         else:
