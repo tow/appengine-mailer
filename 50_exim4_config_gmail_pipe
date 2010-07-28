@@ -1,0 +1,8 @@
+remote_smtp_smarthost:
+  debug_print = "T: gmail_pipe for $local_part@$domain"
+  driver = pipe
+  path = "/bin:/usr/bin:/usr/local/bin"
+  command = "/usr/bin/gmail"
+  return_path_add
+  delivery_date_add
+  envelope_to_add

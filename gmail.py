@@ -52,7 +52,7 @@ class Connection(object):
 
 class GmailProxy(object):
     def __init__(self, SECRET_KEY=None, EMAIL_APPENGINE_PROXY_URL=None, fix_sender=False, fail_silently=False):
-        self.signer = Signer(SECRET_KEY)
+        self.signer = Signer([SECRET_KEY])
         self.connection = Connection(EMAIL_APPENGINE_PROXY_URL)
         self.fix_sender = fix_sender
         self.fail_silently = fail_silently
