@@ -91,7 +91,7 @@ class Mailer(object):
                 elif part.get_content_type() == 'text/html' and not html:
                     html = part.get_payload(decode=True)
                 elif not part.get_content_type().startswith('multipart'):
-                    attachments.append((get_filename(part), part.get_payload(decode=True)))
+                    attachments.append((self.get_filename(part), part.get_payload(decode=True)))
             if not body:
                 raise BadMessageError("No message body specified")
             message.body = body
