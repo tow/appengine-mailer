@@ -28,13 +28,16 @@ class Mailer(object):
             message.send()
             return
         except InvalidSenderError:
+            errmsg = "Unauthorized message sender '%s'" % message.sender
             if not self.fix_sender:
-                raise BadMessageError("Unauthorized message sender '%s'" % sender)
+                raise BadMessageError(errmsg)
+            else:
+                logging.info(errmsg)
         message.sender = self.default_sender
         try:
             message.send()
         except InvalidSenderError:
-            raise BadMessageError("Unauthorized default message sender '%s'" % sender)
+            raise BadMessageError("Unauthorized default message sender '%s'" % message.sender)
 
     @staticmethod
     def get_filename(part):
