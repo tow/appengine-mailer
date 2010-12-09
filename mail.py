@@ -127,14 +127,17 @@ class SendMail(RequestHandler):
             self.error(204)
         except BadRequestError, e:
             logging.error("Malformed request: %s" % e.args[0])
+            logging.error(str(self.request))
             self.error(400)
             self.response.out.write(e.args[0])
         except BadMessageError, e:
             logging.error("Failed to send message: %s" % e.args[0])
+            logging.error(str(self.request))
             self.error(400)
             self.response.out.write(e.args[0])
         except Exception, e:
             logging.exception("Failed to process request")
+            logging.error(str(self.request))
             self.error(500)
 
     def parse_args(self):
