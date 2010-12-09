@@ -65,8 +65,12 @@ class GmailProxy(object):
         data = urllib.urlencode([(k, v.encode('utf-8')) for k, v in values.items()])
         status, errmsg = self.connection.make_request(data)
 
-        if status != 204 and not self.fail_silently:
-            raise MessageSendingFailure(errmsg)
+        if status != 204:
+            if not self.fail_silently:
+                raise MessageSendingFailure(errmsg)
+            else:
+                return False
+       return True
 
 
 if __name__ == '__main__':

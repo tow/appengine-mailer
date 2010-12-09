@@ -12,9 +12,7 @@ class GmailBackend(BaseEmailBackend):
     def send_messages(self, messages):
         n = 0
         for message in messages:
-            try:
-                self.gmail_proxy.send_mail(message.message())
+            sent = self.gmail_proxy.send_mail(message.message())
+            if sent:
                 n += 1
-            except MessageSendingFailure:
-                pass
         return n
