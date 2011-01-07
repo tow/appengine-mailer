@@ -70,7 +70,7 @@ class GmailProxy(object):
                 raise MessageSendingFailure(errmsg)
             else:
                 return False
-       return True
+        return True
 
 
 if __name__ == '__main__':
